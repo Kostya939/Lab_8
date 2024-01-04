@@ -86,7 +86,6 @@ public class WeatherApi {
     }
 
 
-    // Find The Hottest Stations
     public static List<Integer> findHottestStations(List<WeatherData> weatherData, int limit) {
         return weatherData.stream()
                 .filter(data -> data.getTemperature() > 0)
@@ -99,7 +98,6 @@ public class WeatherApi {
                 .collect(Collectors.toList());
     }
 
-    // Find The Coldest Stations
     public static List<Integer> findColdestStations(List<WeatherData> weatherData, int limit) {
         return weatherData.stream()
                 .filter(data -> data.getTemperature() > 0)
@@ -113,7 +111,6 @@ public class WeatherApi {
     }
 
 
-    // Find The Wettest Stations
     public List<Integer> findWettestStations() {
         return weatherData.stream()
                 .filter(data -> data.getPrecipitation() > 0)
@@ -199,7 +196,6 @@ public class WeatherApi {
     public static String findWindiestMonth(List<WeatherData> data) {
         Map<String, Double> averageWindSpeedByMonth = calculateAverageByMonth(data, "windSpeed");
 
-        // Find the month with the highest average wind speed
         Map.Entry<String, Double> maxEntry = Collections.max(averageWindSpeedByMonth.entrySet(), Map.Entry.comparingByValue());
         return maxEntry.getKey();
     }
@@ -208,7 +204,6 @@ public class WeatherApi {
     public void displayData(List<WeatherData> data) {
         System.out.println("Weather Data Analysis:");
 
-        // Display each weather data entry
         for (WeatherData dayData : data) {
             System.out.println(dayData);
         }
