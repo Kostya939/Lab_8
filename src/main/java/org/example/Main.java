@@ -1,75 +1,93 @@
 package org.example;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
+
 
 public class Main {
-    public static void main(String[] args) {
-        List<String> usCities = Arrays.asList("New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose");
 
-        for (String city : usCities) {
-            try {
-                String weatherDataJson = WeatherApi.getWeatherData(city);
-                List<WeatherData> weatherData = WeatherApi.parseWeatherData(weatherDataJson);
+    public static void main(String[] args) throws IOException, ParseException {
 
-                printHottestAndColdestStations(city, weatherData);
+        WeatherAPI weatherAPI = new WeatherAPI("79d4b9ae6442c2c09bfc1a07c3df24c1");
 
-                printStationsWithConsecutiveRain(city, weatherData);
+        List<WeatherData> weatherData = weatherAPI.getWeatherData();
 
-                printStationsWithTemperatureIncrease(city, weatherData);
+        analyzeData(weatherData);
 
-                printAverageStatsByMonth(city, weatherData);
+        displayResults(weatherData);
+    }
 
-                printWindiestMonth(city, weatherData);
+    private static void displayResults(List<WeatherData> weatherData) {
+    }
 
-                System.out.println("-----------------------------------------");
+    private static void analyzeData(List<WeatherData> weatherData) {
 
-            } catch (IOException e) {
-                System.err.println("Error while fetching data for " + city + ": " + e.getMessage());
-            } catch (Exception e) {
-                System.err.println("Unexpected error for " + city + ": " + e.getMessage());
+        List<WeatherData> hottestStations = getTop10StationsByTemperature(weatherData, true);
+        List<WeatherData> coldestStations = getTop10StationsByTemperature(weatherData, false);
+
+        List<WeatherData> wettestStations = getTop10StationsByPrecipitation(weatherData);
+
+        List<WeatherData> stationsWithLongRainyPeriods = getStationsWithLongRainyPeriods(weatherData);
+
+        List<WeatherData> stationsWithTemperatureIncreases = getStationsWithTemperatureIncreases(weatherData);
+
+        Map<Integer, WeatherData> monthlyData = getAverageMonthlyData(weatherData);
+
+        int monthWithHighestWindSpeed = getMonthWithHighestWindSpeed(monthlyData);
+    }
+
+    private static List<WeatherData> getTop10StationsByTemperature(List<WeatherData> weatherData, boolean isHottest) {
+
+        Collections.sort(weatherData, (a, b) -> {
+            if (isHottest) {
+                return b.getAverageTemperature() - a.getAverageTemperature();
+            } else {
+                return a.getAverageTemperature() - b.getAverageTemperature();
+            }
+        });
+
+        return weatherData.subList(0, 10);
+    }
+
+    private static List<WeatherData> getTop10StationsByPrecipitation(List<WeatherData> weatherData) {
+
+        Collections.sort(weatherData, (a, b) -> {
+            return b.getAveragePrecipitation() - a.getAveragePrecipitation();
+        });
+
+        return weatherData.subList(0, 10);
+    }
+
+    private static List<WeatherData> getStationsWithLongRainyPeriods(List<WeatherData> weatherData) {
+
+        List<WeatherData> stationsWithLongRainyPeriods = new ArrayList<>();
+
+        for (WeatherData weatherDataItem : weatherData) {
+            int rainyDaysCount = 0;
+            for (int i = 0; i < weatherData.size() - 1; i++) {
+                if (weatherDataItem.getPrecipitation() > 0 && weatherData.get(i + 1).getPrecipitation() > 0) {
+                    rainyDaysCount++;
+                } else {
+                    rainyDaysCount = 0;
+                }
+
+                if (rainyDaysCount >= 7) {
+                    stationsWithLongRainyPeriods.add(weatherDataItem);
+                    break;
+                }
             }
         }
+
+        return stationsWithLongRainyPeriods;
     }
 
-    private static void printHottestAndColdestStations(String city, List<WeatherData> weatherData) {
-        List<Integer> hottestStations = WeatherApi.findHottestStations(weatherData, 10);
-        List<Integer> coldestStations = WeatherApi.findColdestStations(weatherData, 10);
-
-        System.out.println("City: " + city);
-        System.out.println("Top 10 Hottest Stations: " + hottestStations);
-        System.out.println("Top 10 Coldest Stations: " + coldestStations);
-    }
-
-    private static void printStationsWithConsecutiveRain(String city, List<WeatherData> weatherData) {
-        List<Integer> stationsWithRain = WeatherApi.findStationsWithConsecutiveRain(weatherData, 7);
-        System.out.println("City: " + city);
-        System.out.println("Stations with more than 7 consecutive days of rain: " + stationsWithRain);
-    }
-
-    private static void printStationsWithTemperatureIncrease(String city, List<WeatherData> weatherData) {
-        List<Integer> stationsWithTemperatureIncrease = WeatherApi.findStationsWithTemperatureIncrease(weatherData, 5, 5);
-        System.out.println("City: " + city);
-        System.out.println("Stations with a temperature increase of at least 5°C over 5 consecutive days: "
-                + stationsWithTemperatureIncrease);
-    }
-
-    private static void printAverageStatsByMonth(String city, List<WeatherData> weatherData) {
-        Map<String, Double> averageTemperatureByMonth = WeatherApi.calculateAverageByMonth(weatherData, "temperature");
-        Map<String, Double> averageHumidityByMonth = WeatherApi.calculateAverageByMonth(weatherData, "humidity");
-        Map<String, Double> averagePrecipitationByMonth = WeatherApi.calculateAverageByMonth(weatherData, "precipitation");
-
-        System.out.println("City: " + city);
-        System.out.println("Average Temperature by Month: " + averageTemperatureByMonth);
-        System.out.println("Average Humidity by Month: " + averageHumidityByMonth);
-        System.out.println("Average Precipitation by Month: " + averagePrecipitationByMonth);
-    }
-
-    private static void printWindiestMonth(String city, List<WeatherData> weatherData) {
-        String windiestMonth = WeatherApi.findWindiestMonth(weatherData);
-        System.out.println("City: " + city);
-        System.out.println("Windiest Month: " + windiestMonth);
-    }
-}
