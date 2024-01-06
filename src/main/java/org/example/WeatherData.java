@@ -1,28 +1,62 @@
 package org.example;
 
-public class WeatherData {
+import java.io.Serializable;
+import java.util.Date;
 
-    private int id;
-    private String date;
+public class WeatherData implements Serializable {
+
+    private String stationId;
+    private String name;
+    private double latitude;
+    private double longitude;
     private double temperature;
-    private int humidity;
+    private double humidity;
     private double precipitation;
     private double windSpeed;
+    private Date date;
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
+    public WeatherData(String stationId, String name, double latitude, double longitude, double temperature, double humidity, double precipitation, double windSpeed, Date date) {
+        this.stationId = stationId;
+        this.name = name;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.temperature = temperature;
+        this.humidity = humidity;
+        this.precipitation = precipitation;
+        this.windSpeed = windSpeed;
         this.date = date;
+    }
+
+    public String getStationId() {
+        return stationId;
+    }
+
+    public void setStationId(String stationId) {
+        this.stationId = stationId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     public double getTemperature() {
@@ -33,11 +67,11 @@ public class WeatherData {
         this.temperature = temperature;
     }
 
-    public int getHumidity() {
+    public double getHumidity() {
         return humidity;
     }
 
-    public void setHumidity(int humidity) {
+    public void setHumidity(double humidity) {
         this.humidity = humidity;
     }
 
@@ -57,7 +91,34 @@ public class WeatherData {
         this.windSpeed = windSpeed;
     }
 
-    public WeatherData() {
+    public Date getDate() {
+        return date;
     }
 
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public double getAverageTemperature() {
+        return (temperature + precipitation) / 2;
+    }
+
+    public double getAverageHumidity() {
+        return (humidity + windSpeed) / 2;
+    }
+
+    @Override
+    public String toString() {
+        return "WeatherData{" +
+                "stationId='" + stationId + '\'' +
+                ", name='" + name + '\'' +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", temperature=" + temperature +
+                ", humidity=" + humidity +
+                ", precipitation=" + precipitation +
+                ", windSpeed=" + windSpeed +
+                ", date=" + date +
+                '}';
+    }
 }
